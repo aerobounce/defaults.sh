@@ -29,18 +29,20 @@ This script has been just only for myself though, today, *I'm releasing it to th
 ## ⇣ Installation
 
 ### Homebrew
-```
+```sh
 brew install localbrew/core/ds
 ```
 
 ### Portable
-- This script is quite lightweight. You just can download and use it anywhere as long as it's on macOS.
-    - Make sure it has executable permission if it fails to launch.
+```sh
+# Download onto ~/Desktop
+ds=~/Desktop/ds; curl "https://raw.githubusercontent.com/aerobounce/defaults.sh/master/ds" >| "$ds" && chmod -vv $(sh -c 'printf "%04o" $((0777 - $(umask)))') "$ds"
+```
 
 <br>
 
 ## ✎ Usage
-```bash
+```sh
 NAME
     defaults.sh -- Convert and save your defaults as shell script.
 
@@ -71,7 +73,7 @@ DESCRIPTION
 
 - **If you want to see the preferences of `Dock.app` on the fly:**
 
-    ```bash
+    ```sh
     $ ds -d com.apple.dock
     #!/usr/bin/env bash
 
@@ -87,13 +89,13 @@ DESCRIPTION
 
 - **Or pipe it into any command you like:**
 
-    ```bash
+    ```sh
     $ ds -d com.apple.dock | <subl | less...>
     ```
 
 - **Export all the user defaults as shell script:**
 
-    ```bash
+    ```sh
     $ ds save
 
     $ ls ~/Desktop
@@ -113,7 +115,7 @@ DESCRIPTION
 
 - **Make a script that resets preferences of an app while preserving your settings**
 
-    ```bash
+    ```sh
     # Let's say we want to reset Finder.
     # Make com.apple.finder.sh script such as following:
 
