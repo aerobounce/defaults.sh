@@ -1,0 +1,215 @@
+#!/usr/bin/env bash
+#
+# defaults.sh (ds)
+# version 20200410
+#
+# AGPLv3 License
+# Created by github.com/aerobounce on 2019/2/1.
+# Copyright © 2019-present aerobounce. All rights reserved.
+#
+set -Cu
+
+# Parser
+# $1: Domain name.
+# $2: -currentHost. Can be empty.
+parse() {
+    # Defaults Key and Value.
+    local _KEY=""
+    local _VALUE=""
+
+    # Begin writing script.
+    # Declare shebang.
+    printf '#!/usr/bin/env bash\n\n'
+
+    # Parse XML line by line.
+    # shellcheck disable=SC2086
+    defaults ${2:-} export "$1" - | while IFS= read -r; do
+
+        # Value type.
+        local _VALUE_TYPE="${REPLY#*</}"
+        _VALUE_TYPE="${_VALUE_TYPE%>}"
+
+        case "$REPLY" in
+            $'\t'"<key>"*)
+                # Extract KEY
+                _KEY="${REPLY#$'\t'<key>}"
+                _KEY=\""${_KEY%</key>}"\"
+                ;;
+
+            $'\t'"<string>"* | $'\t'"<date>"*)
+                # Extract Value (String or Date)
+                _VALUE="${REPLY/$'\t'<$_VALUE_TYPE>/}"
+                _VALUE="-$_VALUE_TYPE '${_VALUE/<\/$_VALUE_TYPE>/}'"
+                ;;
+
+            $'\t'"<integer>"*)
+                # Extract Value (Integer)
+                _VALUE="${REPLY/$'\t'<$_VALUE_TYPE>/}"
+                _VALUE="-$_VALUE_TYPE ${_VALUE/<\/$_VALUE_TYPE>/}"
+                ;;
+
+            $'\t'"<real>"*)
+                # Extract Value (Float)
+                _VALUE="${REPLY/$'\t'<$_VALUE_TYPE>/}"
+                _VALUE="-float ${_VALUE/<\/$_VALUE_TYPE>/}"
+                ;;
+
+            $'\t'"<true/>" | $'\t'"<false/>")
+                # Extract Value (Boolean)
+                _VALUE="${REPLY/$'\t'</}"
+                _VALUE="-boolean ${_VALUE/\/>/}"
+                ;;
+
+            $'\t'"<dict/>" | $'\t'"<array/>")
+                # Extract Value (Empty Array or Dict)
+                _VALUE="'${REPLY#$'\t'}'"
+                ;;
+
+            $'\t'"<data>" | $'\t'"<array>" | $'\t'"<dict>")
+                # 1. Data, Array or Dict: Tag Begins
+                if [[ -n ${2:-} ]]; then
+                    echo "defaults ${2:-} write $1 $_KEY '"$'\n'"${REPLY#$'\t'}"
+                else
+                    echo "defaults write $1 $_KEY '"$'\n'"${REPLY#$'\t'}"
+                fi
+
+                _KEY=""
+                _VALUE=""
+
+                continue
+                ;;
+
+            $'\t'"</data>" | $'\t'"</array>" | $'\t'"</dict>")
+                # 3. Data, Array or Dict: Tag Ends
+                echo "${REPLY#$'\t'}"$'\n'\'
+
+                _KEY=""
+                _VALUE=""
+
+                continue
+                ;;
+
+            *)
+                # 2. Data, Array or Dict: Raw XML
+
+                # Skip XML Declaration, Plist info and Root Tags
+                local DOCTYPE='<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" '
+                DOCTYPE+='"http://www.apple.com/DTDs/PropertyList-1.0.dtd">'
+                [[ $REPLY == '<?xml version="1.0" encoding="UTF-8"?>' ]] && continue
+                [[ $REPLY == "$DOCTYPE" ]] && continue
+                [[ $REPLY == '<plist version="1.0">' ]] && continue
+                [[ $REPLY == "<dict>" ]] && continue
+                [[ $REPLY == "</dict>" ]] && continue
+                [[ $REPLY == "</plist>" ]] && continue
+
+                # Empty case.
+                [[ $REPLY == "<dict/>" ]] && echo "# Empty plist." && continue
+
+                REPLY=${REPLY#$'\t'}
+                REPLY=${REPLY//\'/\'\"\'\"\'} # Escape single quote
+                echo "$REPLY"
+                ;;
+
+        esac
+
+        # If KEY and VALUE are ready, echo result
+        [[ -n $_KEY && -n $_VALUE ]] || continue
+
+        if [[ -n ${2:-} ]]; then
+            echo "defaults ${2:-} write $1 $_KEY $_VALUE"
+        else
+            echo "defaults write $1 $_KEY $_VALUE"
+        fi
+
+        _KEY=""
+        _VALUE=""
+    done
+}
+
+save() {
+    (
+        local IFS=', '
+        local DOMAIN
+
+        # Current Host Domains
+        for DOMAIN in $(defaults -currentHost domains) NSGlobalDomain; do
+            {
+                echo "currentHost" "$DOMAIN"
+                parse "$DOMAIN" -currentHost >> "$_OUTPUT_DIR/$DOMAIN.currentHost.sh"
+                chmod a+x "$_OUTPUT_DIR/$DOMAIN.currentHost.sh"
+            } &
+            while [[ $(jobs -p | wc -w) -ge 8 ]]; do sleep 0.1; done
+        done
+        wait
+
+        # User Domains + NSGlobalDomain
+        for DOMAIN in $(defaults domains) NSGlobalDomain; do
+            {
+                echo "$DOMAIN"
+                parse "$DOMAIN" >> "$_OUTPUT_DIR/$DOMAIN.sh"
+                chmod a+x "$_OUTPUT_DIR/$DOMAIN.sh"
+            } &
+            while [[ $(jobs -p | wc -w) -ge 8 ]]; do sleep 0.1; done
+        done
+        wait
+    )
+}
+
+usage() {
+    local y='\e[1;33m' # Yellow and Bold
+    local p='\e[1;35m' # Purple and Bold
+    local c='\e[4;36m' # Cyan and Underlined
+    local w='\e[0;32m' # Cyan and Underlined
+    local r='\e[0m'    # Reset
+
+    # shellcheck disable=SC2059
+    printf "${p}NAME${r}
+    ${y}defaults.sh${r} -- Convert and save your defaults as shell script.
+
+${p}USAGE${r}
+    ${y}rd${r}
+    ${y}rd${r} (domain | -d) ${c}<(Domain | Plist-path)>${r}
+    ${y}rd${r} (save | -s)
+
+${p}DESCRIPTION${r}
+    ${y}[no command]${r}
+            Shows this help.
+
+    ${y}(domain | -d)${r} ${c}<(Domain | Plist-path)>${r}
+            Prints parsed defauls of specified domain or plist file.
+            Both of the following commands are valid:
+            ${w}$ ds -d com.apple.dock${r}
+            ${w}$ ds -d ~/Library/Preferences/com.apple.dock.plist${r}
+
+    ${y}(save | -s)${r}
+            Exports all the defaults to ~/Desktop as executable .sh files.
+            Domains are:
+                'defaults -currentHost domains' + NSGlobalDomain
+                'defaults domains' + NSGlobalDomain
+"
+    exit 1
+}
+
+# Early Exit
+[[ $# -eq 0 ]] && usage
+
+# Parse Arguments
+_domain() {
+    [[ -z ${1:-} ]] && usage
+    parse "$1"
+}
+_save() {
+    _OUTPUT_DIR="$HOME/Desktop/rd $(date "+%Y.%m.%d %H.%M.%S")"
+    [[ ! -e $_OUTPUT_DIR ]] && mkdir "$_OUTPUT_DIR"
+    save
+}
+for arg in "$@"; do
+    case "$arg" in
+        domain | -d) _domain "$2" ;;
+        save | -s) _save ;;
+    esac
+    exit $?
+done
+
+# Fallback
+usage
