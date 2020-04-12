@@ -159,29 +159,29 @@ usage() {
     local y='\e[1;33m' # Yellow and Bold
     local p='\e[1;35m' # Purple and Bold
     local c='\e[4;36m' # Cyan and Underlined
-    local w='\e[0;32m' # Cyan and Underlined
+    local g='\e[0;32m' # Green
     local r='\e[0m'    # Reset
 
     # shellcheck disable=SC2059
     printf "${p}NAME${r}
-    ${y}defaults.sh${r} -- Convert and save your defaults as shell script.
+    ${y}defaults.sh${r} -- Convert user defaults (plist) into shell script
 
 ${p}USAGE${r}
-    ${y}rd${r}
-    ${y}rd${r} (domain | -d) ${c}<(Domain | Plist-path)>${r}
-    ${y}rd${r} (save | -s)
+    ${y}ds${r}
+    ${y}ds${r} (-d | domain) ${c}<(domain | plist-path)>${r}
+    ${y}ds${r} (-s | save)
 
 ${p}DESCRIPTION${r}
     ${y}[no command]${r}
             Shows this help.
 
-    ${y}(domain | -d)${r} ${c}<(Domain | Plist-path)>${r}
-            Prints parsed defauls of specified domain or plist file.
+    ${y}(-d | domain)${r} ${c}<(domain | plist-path)>${r}
+            Prints parsed user defaults of specified domain or .plist file.
             Both of the following commands are valid:
-            ${w}$ ds -d com.apple.dock${r}
-            ${w}$ ds -d ~/Library/Preferences/com.apple.dock.plist${r}
+            ${g}$ ds -d com.apple.dock${r}
+            ${g}$ ds -d ~/Library/Preferences/com.apple.dock.plist${r}
 
-    ${y}(save | -s)${r}
+    ${y}(-s | save)${r}
             Exports all the defaults to ~/Desktop as executable .sh files.
             Domains are:
                 'defaults -currentHost domains' + NSGlobalDomain
@@ -199,7 +199,7 @@ _domain() {
     parse "$1"
 }
 _save() {
-    _OUTPUT_DIR="$HOME/Desktop/rd $(date "+%Y.%m.%d %H.%M.%S")"
+    _OUTPUT_DIR="$HOME/Desktop/ds $(date "+%Y.%m.%d %H.%M.%S")"
     [[ ! -e $_OUTPUT_DIR ]] && mkdir "$_OUTPUT_DIR"
     save
 }
