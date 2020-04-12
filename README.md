@@ -19,10 +19,11 @@ This script has been just only for myself though, today, *I'm releasing it to th
 
 - **When you build dotfiles, aren't they inconvenient format?**
 
+    **NeXTStep Format**
     ```sh
-    # NeXTStep Format
     $ defaults read com.apple.dock
-
+    ```
+    ```sh
     {
         autohide = 1;
         "autohide-delay" = 0;
@@ -30,10 +31,11 @@ This script has been just only for myself though, today, *I'm releasing it to th
     ...
     ```
 
+    **XML Property Lists**
     ```sh
-    # XML Property Lists
     $ defaults export com.apple.dock -
-
+    ```
+    ```xml
     <?xml version="1.0" encoding="UTF-8"?>
     <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
     <plist version="1.0">
@@ -49,10 +51,11 @@ This script has been just only for myself though, today, *I'm releasing it to th
 
 - **With `ds`, you'll get this:**
 
+    **Shell Script Format**
     ```sh
-    # Shell Script Format
     $ ds -d com.apple.dock
-
+    ```
+    ```sh
     #!/usr/bin/env bash
 
     defaults write com.apple.dock "autohide" -boolean true
