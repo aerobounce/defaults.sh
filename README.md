@@ -1,24 +1,73 @@
-#  defaults.sh
+#  defaults.sh — ds
 
-> Convert your `defaults` or any `plist` into Shell Scripts with ease!
+> **Convert user defaults (plist) into shell script with ease!**
 
-[![Demo](https://asciinema.org/a/wUXTRimoyZDaizGfzX2XiJfYU.svg)](https://asciinema.org/a/wUXTRimoyZDaizGfzX2XiJfYU)
-
-## ★ Overview
-A while ago, I started to build **dotfiles** up. Soon found out there is no robust way to convert **preferences (plists)** into **shell scripts**. So, decided to create a such script to **automate the processes**.<br>
-
-This script has been just only for myself though, today, *I'm releasing it to the public* 🎉 <br>
-**To, make a such time into constructive one, at least a part of it.** Take it from a different perspective, this might be a good chance to review or reconstruct your dotfiles. It'll be a fun with `defaults.sh`.<br>
-
-**Stay Home, Stay Safe. Instead, Unleash the Power of `defaults`!**<br>
+[![asciicast ds demo](https://asciinema.org/a/gql2Lhn0grvlgjw4RzaS1NOPV.svg)](https://asciinema.org/a/gql2Lhn0grvlgjw4RzaS1NOPV)
 
 <br>
 
-## ✑ Technical Details
+## 🌟 Overview
+A while ago, I started to build **dotfiles** up. Soon found out there is no robust way to convert **preferences (plists)** into **shell scripts**. So, decided to create a such script to **automate the processes**.<br>
+
+This script has been just only for myself though, today, *I'm releasing it to the public* 🎉<br>
+**To, make a such time into constructive one, at least a part of it.** Take it from a different perspective, this might be a good chance to review or reconstruct your dotfiles. It'll be a fun with `defaults.sh`.<br>
+
+**Stay Home, Stay Safe. Instead, Unleash the Power of `defaults`!**<br>
+<br>
+
+## ❓ What do you mean by "Convert" user defaults?
+
+- **When you build dotfiles, aren't they inconvenient format?**
+
+    ```sh
+    # NeXTStep Format
+    $ defaults read com.apple.dock
+
+    {
+        autohide = 1;
+        "autohide-delay" = 0;
+        "autohide-time-modifier" = 0;
+    ...
+    ```
+
+    ```sh
+    # XML Property Lists
+    $ defaults export com.apple.dock -
+
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+    <plist version="1.0">
+    <dict>
+        <key>autohide</key>
+        <true/>
+        <key>autohide-delay</key>
+        <real>0.0</real>
+        <key>autohide-time-modifier</key>
+        <real>0.0</real>
+    ...
+    ```
+
+- **With `ds`, you'll get this:**
+
+    ```sh
+    # Shell Script Format
+    $ ds -d com.apple.dock
+
+    #!/usr/bin/env bash
+
+    defaults write com.apple.dock "autohide" -boolean true
+    defaults write com.apple.dock "autohide-delay" -float 0.0
+    defaults write com.apple.dock "autohide-time-modifier" -float 0.0
+    ...
+    ```
+
+<br>
+
+## 🖋 Technical Details
 - **Based on Bash**
-    - `GNU bash, version 3.2.57(1)-release (x86_64-apple-darwin19)` (`macOS Catalina`)
-    - Originally written on Mojave, so it works on Mojave.
-    - Not sure with the older macOSes
+    - `GNU bash, version 3.2.57(1)-release (x86_64-apple-darwin19)` shipped with `macOS Catalina`
+    - Originally written on `macOS Mojave`, thus it works on `macOS Mojave`
+    - Although not sure with the older macOSes, it should work
 - **Dependencies are only**
     - `chmod` `date` `defaults` `mkdir` `sleep` `wc`
     - Which are shipped with macOS by default
@@ -26,50 +75,53 @@ This script has been just only for myself though, today, *I'm releasing it to th
 
 <br>
 
-## ⇣ Installation
+## ⏬ Installation
 
-### Homebrew
+- **Homebrew**
+
 ```sh
 brew install localbrew/core/ds
 ```
 
-### Portable
+- **Portable**
+
 ```sh
-# Download onto ~/Desktop
+# Download onto ~/Desktop & make it executable
 ds=~/Desktop/ds; curl "https://raw.githubusercontent.com/aerobounce/defaults.sh/master/ds" >| "$ds" && chmod -vv $(sh -c 'printf "%04o" $((0777 - $(umask)))') "$ds"
 ```
 
 <br>
 
-## ✎ Usage
+## ✏️ Usage
 ```sh
 NAME
-    defaults.sh -- Convert and save your defaults as shell script.
+    defaults.sh -- Convert user defaults (plist) into shell script
 
 USAGE
-    rd
-    rd (domain | -d) <(Domain | Plist-path)>
-    rd (save | -s)
+    ds
+    ds (-d | domain) <(domain | plist-path)>
+    ds (-s | save)
 
 DESCRIPTION
     [no command]
             Shows this help.
 
-    (domain | -d) <(Domain | Plist-path)>
-            Prints parsed defauls of specified domain or plist file.
+    (-d | domain) <(domain | plist-path)>
+            Prints parsed user defaults of specified domain or .plist file.
             Both of the following commands are valid:
             $ ds -d com.apple.dock
             $ ds -d ~/Library/Preferences/com.apple.dock.plist
 
-    (save | -s)
+    (-s | save)
             Exports all the defaults to ~/Desktop as executable .sh files.
             Domains are:
                 'defaults -currentHost domains' + NSGlobalDomain
                 'defaults domains' + NSGlobalDomain
 ```
+
 <br>
 
-## ✦ Exmaples
+## ✨ Exmaples
 
 - **If you want to see the preferences of `Dock.app` on the fly:**
 
@@ -99,9 +151,9 @@ DESCRIPTION
     $ ds save
 
     $ ls ~/Desktop
-    rd 2020.04.11 14.54.06/
+    ds 2020.04.11 14.54.06/
 
-    $ ls -1 'rd 2020.04.11 14.54.06'
+    $ ls -1 'ds 2020.04.11 14.54.06'
     ContextStoreAgent.sh*
     MobileMeAccounts.sh*
     NSGlobalDomain.currentHost.sh*
@@ -109,16 +161,14 @@ DESCRIPTION
     com.apple.AMPDevicesAgent.sh*
     com.apple.AMPLibraryAgent.sh*
     ...
-    # Now you can integrate them into your dotfiles
-    # You need to remove needles keys though
     ```
 
-- **Make a script that resets preferences of an app while preserving your settings**
+    - **Now you can integrate them into your dotfiles (You'll need to remove needles keys though)**
+
+
+- **Script that resets preferences of an app while preserving your settings:**
 
     ```sh
-    # Let's say we want to reset Finder.
-    # Make com.apple.finder.sh script such as following:
-
     #!/usr/bin/env bash
 
     trap 'killall Finder ; open -a Finder >/dev/null 2>&1' EXIT
