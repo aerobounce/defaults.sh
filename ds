@@ -178,8 +178,8 @@ ${p}DESCRIPTION${r}
     ${y}(-d | domain)${r} ${c}<(domain | plist-path)>${r}
             Prints parsed user defaults of specified domain or .plist file.
             Both of the following commands are valid:
-            ${g}$ ds -d com.apple.dock${r}
-            ${g}$ ds -d ~/Library/Preferences/com.apple.dock.plist${r}
+                ${g}$ ds -d com.apple.dock${r}
+                ${g}$ ds -d ~/Library/Preferences/com.apple.dock.plist${r}
 
     ${y}(-s | save)${r}
             Exports all the defaults to ~/Desktop as executable .sh files.
