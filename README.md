@@ -124,7 +124,7 @@ DESCRIPTION
 
 <br>
 
-## ✨ Exmaples
+## ✨ Examples
 
 - **If you want to see the preferences of `Dock.app` on the fly:**
 
