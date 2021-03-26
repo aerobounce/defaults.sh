@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+DOMAIN="com.ds.test"
+defaults write "$DOMAIN" foo 1
+defaults write "$DOMAIN" bar 1
+defaults write "$DOMAIN" bat 1
+defaults write "$DOMAIN" "multi-line" '
+<array>
+	<dict>
+		<key>GUID</key>
+		<integer>1</integer>
+	</dict>
+</array>
+'
+
+defaults write "$DOMAIN" "multi-line2" '
+<array>
+	<dict>
+		<key>GUID</key>
+		<integer>2</integer>
+	</dict>
+</array>
+'
+
+OUTPUT=$(./ds foo)
+EXIT_CODE=$?
+if [ $EXIT_CODE -eq 0 ]; then
+    echo "ds without incorrect arguments should exit with a nonzero error"
+    exit 1
+fi
+
+# defaults write "$DOMAIN" multi-line "foo\nbar"
+# defaults write "$DOMAIN" multi-line2 "bar\nfoo"
+OUTPUT=$(./ds -d "$DOMAIN" --exclude-override foo)
+EXIT_CODE=$?
+if [ $EXIT_CODE -eq 0 ]; then
+    echo "ds should exit early with an error code if --exclude-override is used without --exclude"
+    exit 1
+fi
+OUTPUT=$(./ds -d "$DOMAIN" --exclude 'ba*' --exclude multi-line --exclude-override bat --exclude-override multi-line2)
+EXPECTED="#!/usr/bin/env bash
+
+defaults write com.ds.test \"bat\" -string '1'
+defaults write com.ds.test \"foo\" -string '1'
+defaults write com.ds.test \"multi-line2\" '
+<array>
+	<dict>
+		<key>GUID</key>
+		<integer>2</integer>
+	</dict>
+</array>
+'"
+defaults delete "$DOMAIN"
+if [ "$OUTPUT" != "$EXPECTED" ]; then
+    printf "Output:\n%s\nExpected:\n%s" "$OUTPUT" "$EXPECTED"
+    exit 1
+fi
+echo "tests passed, allegedly"

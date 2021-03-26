@@ -16,6 +16,7 @@ parse() {
     # Defaults Key and Value.
     local _KEY=""
     local _VALUE=""
+    local _EXCLUDE=""
 
     # Begin writing script.
     # Declare shebang.
@@ -34,6 +35,7 @@ parse() {
                 # Extract KEY
                 _KEY="${REPLY#$'\t'<key>}"
                 _KEY=\""${_KEY%</key>}"\"
+                _EXCLUDE=$(skip_exporting_key "$_KEY")
                 ;;
 
             $'\t'"<string>"* | $'\t'"<date>"*)
@@ -67,6 +69,11 @@ parse() {
 
             $'\t'"<data>" | $'\t'"<array>" | $'\t'"<dict>")
                 # 1. Data, Array or Dict: Tag Begins
+                if [ "$_EXCLUDE" = "true" ]; then
+                    _KEY=""
+                    _VALUE=""
+                    continue
+                fi
                 if [[ -n ${2:-} ]]; then
                     echo "defaults ${2:-} write $1 $_KEY '"$'\n'"${REPLY#$'\t'}"
                 else
@@ -81,6 +88,11 @@ parse() {
 
             $'\t'"</data>" | $'\t'"</array>" | $'\t'"</dict>")
                 # 3. Data, Array or Dict: Tag Ends
+                if [ "$_EXCLUDE" = "true" ]; then
+                    _KEY=""
+                    _VALUE=""
+                    continue
+                fi
                 echo "${REPLY#$'\t'}"$'\n'\'
 
                 _KEY=""
@@ -90,6 +102,9 @@ parse() {
                 ;;
 
             *)
+                if [ "$_EXCLUDE" = "true" ]; then
+                    continue
+                fi
                 # 2. Data, Array or Dict: Raw XML
 
                 # Skip XML Declaration, Plist info and Root Tags
@@ -115,6 +130,12 @@ parse() {
         # If KEY and VALUE are ready, echo result
         [[ -n $_KEY && -n $_VALUE ]] || continue
 
+        if [ "$_EXCLUDE" = "true" ]; then
+            _KEY=""
+            _VALUE=""
+            continue
+        fi
+
         if [[ -n ${2:-} ]]; then
             echo "defaults ${2:-} write $1 $_KEY $_VALUE"
         else
@@ -124,6 +145,30 @@ parse() {
         _KEY=""
         _VALUE=""
     done
+}
+
+skip_exporting_key() {
+    local _KEY=$1
+    EXCLUDE=false
+    if [ ${#_EXCLUDES[@]} -ne 0 ]; then
+        CHECK_EXCLUSIONS="true"
+        if [ ${#_EXCLUDE_OVERRIDES[@]} -ne 0 ]; then
+            for pattern in "${_EXCLUDE_OVERRIDES[@]}"; do
+                if [[ "$_KEY" =~ $pattern ]]; then
+                    CHECK_EXCLUSIONS="false"
+                    break
+                fi
+            done
+        fi
+        if [ "$CHECK_EXCLUSIONS" == "true" ]; then
+            for pattern in "${_EXCLUDES[@]}"; do
+                if [[ "$_KEY" =~ $pattern ]]; then
+                    EXCLUDE="true"
+                fi
+            done
+        fi
+    fi
+    echo "$EXCLUDE"
 }
 
 save() {
@@ -169,6 +214,7 @@ usage() {
 ${p}USAGE${r}
     ${y}ds${r}
     ${y}ds${r} (-d | domain) ${c}<(domain | plist-path)>${r}
+    ${y}ds${r} (-d | domain) ${c}<(domain | plist-path)>${r} (-x | exclude) ${c}<(key pattern>${r} (-i | exclude-override) ${c}<(key pattern>${r}
     ${y}ds${r} (-s | save)
 
 ${p}DESCRIPTION${r}
@@ -180,6 +226,14 @@ ${p}DESCRIPTION${r}
             Both of the following commands are valid:
                 ${g}$ ds -d com.apple.dock${r}
                 ${g}$ ds -d ~/Library/Preferences/com.apple.dock.plist${r}
+
+    ${y}(-x | exclude)${r} ${c}<key pattern>${r}
+            Excludes specific keys from domain export. Can be overridden with --exclude-override.
+                ${g}ds -d com.apple.dock --exclude 're*' --exclude region${r}
+
+    ${y}(-i | exclude-override)${r} ${c}<key pattern>${r}
+            Overrides exclude to keep specific keys in the domain export.
+                ${g}ds -d com.apple.dock --exclude 're*' --exclude-override region${r}
 
     ${y}(-s | save)${r}
             Exports all the defaults to ~/Desktop as executable .sh files.
@@ -203,13 +257,60 @@ _save() {
     [[ ! -e $_OUTPUT_DIR ]] && mkdir "$_OUTPUT_DIR"
     save
 }
-for arg in "$@"; do
+
+_EXCLUDE_OVERRIDES=()
+_EXCLUDES=()
+_ACTION=""
+_DOMAIN=""
+
+while [[ $# -gt 0 ]]; do
+    arg="$1"
+
     case "$arg" in
-        domain | -d) _domain "$2" ;;
-        save | -s) _save ;;
+        domain | -d)
+            _DOMAIN="$2"
+            _ACTION="domain"
+            shift
+            shift
+            ;;
+
+        save | -s)
+            _ACTION="save"
+            shift
+            ;;
+
+        --exclude-override | -i)
+            _EXCLUDE_OVERRIDES+=("$2")
+            shift
+            shift
+            ;;
+
+        --exclude | -x)
+            _EXCLUDES+=("$2")
+            shift
+            shift
+            ;;
+
+        *)
+            shift
+            shift
+            ;;
     esac
-    exit $?
 done
 
-# Fallback
-usage
+if [ "$_ACTION" == "" ]; then
+    usage
+    exit 1
+fi
+
+if [ "save" == "$_ACTION" ]; then
+    _save
+else
+    if [ ${#_EXCLUDE_OVERRIDES[@]} -ne 0 ] && [ ${#_EXCLUDES[@]} -eq 0 ]; then
+        echo "--exclude-override may only be used to override a filter in --exclude"
+        exit 1
+    fi
+    _domain "$_DOMAIN"
+fi
+
+exit $?
