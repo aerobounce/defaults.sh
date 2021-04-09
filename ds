@@ -169,6 +169,7 @@ usage() {
 ${p}USAGE${r}
     ${y}ds${r}
     ${y}ds${r} (-d | domain) ${c}<(domain | plist-path)>${r}
+    ${y}ds${r} (-c | currentHost) ${c}<domain>${r}
     ${y}ds${r} (-s | save)
 
 ${p}DESCRIPTION${r}
@@ -181,32 +182,56 @@ ${p}DESCRIPTION${r}
                 ${g}$ ds -d com.apple.dock${r}
                 ${g}$ ds -d ~/Library/Preferences/com.apple.dock.plist${r}
 
+    ${y}(-c | currentHost)${r}
+            Same as ${y}(-d | domain)${r}, except operation will be restricted
+            to the host the user is currently logged in on.
+
     ${y}(-s | save)${r}
             Exports all the defaults to ~/Desktop as executable .sh files.
             Domains are:
                 'defaults -currentHost domains' + NSGlobalDomain
                 'defaults domains' + NSGlobalDomain
 "
+    exit 0
+}
+
+fatalError() {
+    echo "$1" 1>&2
     exit 1
 }
 
 # Early Exit
 [[ $# -eq 0 ]] && usage
 
-# Parse Arguments
-_domain() {
-    [[ -z ${1:-} ]] && usage
-    parse "$1"
-}
-_save() {
-    SAVE_DIR="$HOME/Desktop/ds $(date "+%Y.%m.%d %H.%M.%S")"
-    [[ ! -e $SAVE_DIR ]] && mkdir "$SAVE_DIR"
-    save
-}
+# Main
 for arg in "$@"; do
     case "$arg" in
-        domain | -d) _domain "$2" ;;
-        save | -s) _save ;;
+        currentHost | -c)
+            shift
+            [[ ! $# -eq 1 ]] && fatalError "Invalid number of arguments."
+            parse "$1" -currentHost
+            ;;
+
+        domain | -d)
+            shift
+            [[ ! $# -eq 1 ]] && fatalError "Invalid number of arguments."
+            parse "$1"
+            ;;
+
+        save | -s)
+            shift
+            [[ ! $# -eq 0 ]] && fatalError "Invalid number of arguments."
+
+            SAVE_DIR="$HOME/Desktop/ds $(date "+%Y.%m.%d %H.%M.%S")"
+            [[ ! -e $SAVE_DIR ]] && mkdir "$SAVE_DIR"
+            save
+            ;;
+
+        *)
+            fatalError "Invalid arguments."
+            usage
+            ;;
+
     esac
     exit $?
 done
