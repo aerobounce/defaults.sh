@@ -83,7 +83,7 @@ This script has been just only for myself though, today, *I'm releasing it to th
 - **Homebrew**
 
 ```sh
-brew install localbrew/core/ds
+brew tap aerobounce/defaults.sh "https://github.com/aerobounce/defaults.sh" && brew install ds
 ```
 
 - **Portable**
