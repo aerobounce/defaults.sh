@@ -116,7 +116,7 @@ DESCRIPTION
                 $ ds -d com.apple.dock
                 $ ds -d ~/Library/Preferences/com.apple.dock.plist
 
-    (-c | currentHost)
+    (-c | currentHost) <domain>
             Same as (-d | domain), except operation will be restricted
             to the host the user is currently logged in on.
 

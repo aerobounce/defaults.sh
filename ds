@@ -182,7 +182,7 @@ ${p}DESCRIPTION${r}
                 ${g}$ ds -d com.apple.dock${r}
                 ${g}$ ds -d ~/Library/Preferences/com.apple.dock.plist${r}
 
-    ${y}(-c | currentHost)${r}
+    ${y}(-c | currentHost)${r} ${c}<domain>${r}
             Same as ${y}(-d | domain)${r}, except operation will be restricted
             to the host the user is currently logged in on.
 
