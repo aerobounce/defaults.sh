@@ -14,8 +14,8 @@ set -Cu
 # $2: -currentHost. Can be empty.
 parse() {
     # Defaults Key and Value.
-    local _KEY=""
-    local _VALUE=""
+    local KEY=""
+    local VALUE=""
 
     # Begin writing script.
     # Declare shebang.
@@ -26,55 +26,55 @@ parse() {
     defaults ${2:-} export "$1" - | while IFS= read -r; do
 
         # Value type.
-        local _VALUE_TYPE="${REPLY#*</}"
-        _VALUE_TYPE="${_VALUE_TYPE%>}"
+        local VALUE_TYPE="${REPLY#*</}"
+        VALUE_TYPE="${VALUE_TYPE%>}"
 
         case "$REPLY" in
             $'\t'"<key>"*)
                 # Extract KEY
-                _KEY="${REPLY#$'\t'<key>}"
-                _KEY=\""${_KEY%</key>}"\"
+                KEY="${REPLY#$'\t'<key>}"
+                KEY=\""${KEY%</key>}"\"
                 ;;
 
             $'\t'"<string>"* | $'\t'"<date>"*)
                 # Extract Value (String or Date)
-                _VALUE="${REPLY/$'\t'<$_VALUE_TYPE>/}"
-                _VALUE="-$_VALUE_TYPE '${_VALUE/<\/$_VALUE_TYPE>/}'"
+                VALUE="${REPLY/$'\t'<$VALUE_TYPE>/}"
+                VALUE="-$VALUE_TYPE '${VALUE/<\/$VALUE_TYPE>/}'"
                 ;;
 
             $'\t'"<integer>"*)
                 # Extract Value (Integer)
-                _VALUE="${REPLY/$'\t'<$_VALUE_TYPE>/}"
-                _VALUE="-$_VALUE_TYPE ${_VALUE/<\/$_VALUE_TYPE>/}"
+                VALUE="${REPLY/$'\t'<$VALUE_TYPE>/}"
+                VALUE="-$VALUE_TYPE ${VALUE/<\/$VALUE_TYPE>/}"
                 ;;
 
             $'\t'"<real>"*)
                 # Extract Value (Float)
-                _VALUE="${REPLY/$'\t'<$_VALUE_TYPE>/}"
-                _VALUE="-float ${_VALUE/<\/$_VALUE_TYPE>/}"
+                VALUE="${REPLY/$'\t'<$VALUE_TYPE>/}"
+                VALUE="-float ${VALUE/<\/$VALUE_TYPE>/}"
                 ;;
 
             $'\t'"<true/>" | $'\t'"<false/>")
                 # Extract Value (Boolean)
-                _VALUE="${REPLY/$'\t'</}"
-                _VALUE="-boolean ${_VALUE/\/>/}"
+                VALUE="${REPLY/$'\t'</}"
+                VALUE="-boolean ${VALUE/\/>/}"
                 ;;
 
             $'\t'"<dict/>" | $'\t'"<array/>")
                 # Extract Value (Empty Array or Dict)
-                _VALUE="'${REPLY#$'\t'}'"
+                VALUE="'${REPLY#$'\t'}'"
                 ;;
 
             $'\t'"<data>" | $'\t'"<array>" | $'\t'"<dict>")
                 # 1. Data, Array or Dict: Tag Begins
                 if [[ -n ${2:-} ]]; then
-                    echo "defaults ${2:-} write $1 $_KEY '"$'\n'"${REPLY#$'\t'}"
+                    echo "defaults ${2:-} write $1 $KEY '"$'\n'"${REPLY#$'\t'}"
                 else
-                    echo "defaults write $1 $_KEY '"$'\n'"${REPLY#$'\t'}"
+                    echo "defaults write $1 $KEY '"$'\n'"${REPLY#$'\t'}"
                 fi
 
-                _KEY=""
-                _VALUE=""
+                KEY=""
+                VALUE=""
 
                 continue
                 ;;
@@ -83,8 +83,8 @@ parse() {
                 # 3. Data, Array or Dict: Tag Ends
                 echo "${REPLY#$'\t'}"$'\n'\'
 
-                _KEY=""
-                _VALUE=""
+                KEY=""
+                VALUE=""
 
                 continue
                 ;;
@@ -113,16 +113,16 @@ parse() {
         esac
 
         # If KEY and VALUE are ready, echo result
-        [[ -n $_KEY && -n $_VALUE ]] || continue
+        [[ -n $KEY && -n $VALUE ]] || continue
 
         if [[ -n ${2:-} ]]; then
-            echo "defaults ${2:-} write $1 $_KEY $_VALUE"
+            echo "defaults ${2:-} write $1 $KEY $VALUE"
         else
-            echo "defaults write $1 $_KEY $_VALUE"
+            echo "defaults write $1 $KEY $VALUE"
         fi
 
-        _KEY=""
-        _VALUE=""
+        KEY=""
+        VALUE=""
     done
 }
 
@@ -135,8 +135,8 @@ save() {
         for DOMAIN in $(defaults -currentHost domains) NSGlobalDomain; do
             {
                 echo "currentHost" "$DOMAIN"
-                parse "$DOMAIN" -currentHost >> "$_OUTPUT_DIR/$DOMAIN.currentHost.sh"
-                chmod a+x "$_OUTPUT_DIR/$DOMAIN.currentHost.sh"
+                parse "$DOMAIN" -currentHost >> "$SAVE_DIR/$DOMAIN.currentHost.sh"
+                chmod a+x "$SAVE_DIR/$DOMAIN.currentHost.sh"
             } &
             while [[ $(jobs -p | wc -w) -ge 8 ]]; do sleep 0.1; done
         done
@@ -146,8 +146,8 @@ save() {
         for DOMAIN in $(defaults domains) NSGlobalDomain; do
             {
                 echo "$DOMAIN"
-                parse "$DOMAIN" >> "$_OUTPUT_DIR/$DOMAIN.sh"
-                chmod a+x "$_OUTPUT_DIR/$DOMAIN.sh"
+                parse "$DOMAIN" >> "$SAVE_DIR/$DOMAIN.sh"
+                chmod a+x "$SAVE_DIR/$DOMAIN.sh"
             } &
             while [[ $(jobs -p | wc -w) -ge 8 ]]; do sleep 0.1; done
         done
@@ -199,8 +199,8 @@ _domain() {
     parse "$1"
 }
 _save() {
-    _OUTPUT_DIR="$HOME/Desktop/ds $(date "+%Y.%m.%d %H.%M.%S")"
-    [[ ! -e $_OUTPUT_DIR ]] && mkdir "$_OUTPUT_DIR"
+    SAVE_DIR="$HOME/Desktop/ds $(date "+%Y.%m.%d %H.%M.%S")"
+    [[ ! -e $SAVE_DIR ]] && mkdir "$SAVE_DIR"
     save
 }
 for arg in "$@"; do
