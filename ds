@@ -10,8 +10,8 @@
 set -Cu
 
 # Parser
-# $1: Domain name.
-# $2: -currentHost. Can be empty.
+# $1: Domain name
+# $2: -currentHost (Must be either '-currentHost' without quotes or empty.)
 parse() {
     # Defaults Key and Value.
     local KEY=""
@@ -21,11 +21,11 @@ parse() {
     # Declare shebang.
     printf '#!/usr/bin/env bash\n\n'
 
-    # Parse XML line by line.
+    # Parse Raw XML line by line.
     # shellcheck disable=SC2086
     defaults ${2:-} export "$1" - | while IFS= read -r; do
 
-        # Value type.
+        # Store Value Type
         local VALUE_TYPE="${REPLY#*</}"
         VALUE_TYPE="${VALUE_TYPE%>}"
 
@@ -66,7 +66,7 @@ parse() {
                 ;;
 
             $'\t'"<data>" | $'\t'"<array>" | $'\t'"<dict>")
-                # 1. Data, Array or Dict: Tag Begins
+                # Data, Array or Dict - Phase 1: Tag Begins
                 if [[ -n ${2:-} ]]; then
                     echo "defaults ${2:-} write $1 $KEY '"$'\n'"${REPLY#$'\t'}"
                 else
@@ -80,7 +80,7 @@ parse() {
                 ;;
 
             $'\t'"</data>" | $'\t'"</array>" | $'\t'"</dict>")
-                # 3. Data, Array or Dict: Tag Ends
+                # Data, Array or Dict - Phase 3: Tag Ends
                 echo "${REPLY#$'\t'}"$'\n'\'
 
                 KEY=""
@@ -90,7 +90,7 @@ parse() {
                 ;;
 
             *)
-                # 2. Data, Array or Dict: Raw XML
+                # Data, Array or Dict - Phase 2: Extract Raw XML
 
                 # Skip XML Declaration, Plist info and Root Tags
                 local DOCTYPE='<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" '
@@ -121,15 +121,22 @@ parse() {
             echo "defaults write $1 $KEY $VALUE"
         fi
 
+        # Reset KEY and VALUE
         KEY=""
         VALUE=""
     done
 }
 
+# Parse all the domains and save as script files.
+# This process will be done concurrently.
 save() {
     (
         local IFS=', '
         local DOMAIN
+        local SAVE_DIR
+
+        SAVE_DIR="$HOME/Desktop/ds $(date "+%Y.%m.%d %H.%M.%S")"
+        [[ ! -e $SAVE_DIR ]] && mkdir "$SAVE_DIR"
 
         # Current Host Domains
         for DOMAIN in $(defaults -currentHost domains) NSGlobalDomain; do
@@ -155,6 +162,7 @@ save() {
     )
 }
 
+# Show usage and exit with code 0.
 usage() {
     local y='\e[1;33m' # Yellow and Bold
     local p='\e[1;35m' # Purple and Bold
@@ -187,7 +195,9 @@ ${p}DESCRIPTION${r}
             to the host the user is currently logged in on.
 
     ${y}(-s | save)${r}
-            Exports all the defaults to ~/Desktop as executable .sh files.
+            Exports all the defaults as executable .sh files.
+            (To '~/Desktop/ds +%%Y.%%m.%%d %%H.%%M.%%S/')
+
             Domains are:
                 'defaults -currentHost domains' + NSGlobalDomain
                 'defaults domains' + NSGlobalDomain
@@ -195,12 +205,14 @@ ${p}DESCRIPTION${r}
     exit 0
 }
 
+# Show error message and exit with code 1.
 fatalError() {
     echo "$1" 1>&2
+    echo "Type 'ds' for usage." 1>&2
     exit 1
 }
 
-# Early Exit
+# Show Usage
 [[ $# -eq 0 ]] && usage
 
 # Main
@@ -221,20 +233,13 @@ for arg in "$@"; do
         save | -s)
             shift
             [[ ! $# -eq 0 ]] && fatalError "Invalid number of arguments."
-
-            SAVE_DIR="$HOME/Desktop/ds $(date "+%Y.%m.%d %H.%M.%S")"
-            [[ ! -e $SAVE_DIR ]] && mkdir "$SAVE_DIR"
             save
             ;;
 
         *)
             fatalError "Invalid arguments."
-            usage
             ;;
 
     esac
     exit $?
 done
-
-# Fallback
-usage

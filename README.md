@@ -89,7 +89,7 @@ brew tap aerobounce/defaults.sh "https://github.com/aerobounce/defaults.sh" && b
 - **Portable**
 
 ```sh
-# Download onto ~/Desktop & make it executable
+# Download 'ds' onto ~/Desktop & make it executable
 ds=~/Desktop/ds; curl "https://raw.githubusercontent.com/aerobounce/defaults.sh/master/ds" >| "$ds" && chmod -vv $(sh -c 'printf "%04o" $((0777 - $(umask)))') "$ds"
 ```
 
@@ -121,7 +121,9 @@ DESCRIPTION
             to the host the user is currently logged in on.
 
     (-s | save)
-            Exports all the defaults to ~/Desktop as executable .sh files.
+            Exports all the defaults as executable .sh files.
+            (To '~/Desktop/ds +%Y.%m.%d %H.%M.%S/')
+
             Domains are:
                 'defaults -currentHost domains' + NSGlobalDomain
                 'defaults domains' + NSGlobalDomain
