@@ -206,16 +206,16 @@ fatalError() {
 # Main
 for arg in "$@"; do
     case "$arg" in
-        currentHost | -c)
-            shift
-            [[ ! $# -eq 1 ]] && fatalError "Invalid number of arguments."
-            parse "$1" -currentHost
-            ;;
-
         domain | -d)
             shift
             [[ ! $# -eq 1 ]] && fatalError "Invalid number of arguments."
             parse "$1"
+            ;;
+
+        currentHost | -c)
+            shift
+            [[ ! $# -eq 1 ]] && fatalError "Invalid number of arguments."
+            parse "$1" -currentHost
             ;;
 
         save | -s)
