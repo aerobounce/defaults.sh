@@ -103,6 +103,7 @@ NAME
 USAGE
     ds
     ds (-d | domain) <(domain | plist-path)>
+    ds (-c | currentHost) <domain>
     ds (-s | save)
 
 DESCRIPTION
@@ -114,6 +115,10 @@ DESCRIPTION
             Both of the following commands are valid:
                 $ ds -d com.apple.dock
                 $ ds -d ~/Library/Preferences/com.apple.dock.plist
+
+    (-c | currentHost)
+            Same as (-d | domain), except operation will be restricted
+            to the host the user is currently logged in on.
 
     (-s | save)
             Exports all the defaults to ~/Desktop as executable .sh files.
