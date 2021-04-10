@@ -16,6 +16,12 @@ parse() {
     # Defaults Key and Value.
     local KEY=""
     local VALUE=""
+    local SKIP=0
+
+    next() {
+        KEY=""
+        VALUE=""
+    }
 
     # Begin writing script.
     # Declare shebang.
@@ -31,9 +37,23 @@ parse() {
 
         case "$REPLY" in
             $'\t'"<key>"*)
+                # Reset SKIP flag
+                SKIP=0
+
                 # Extract KEY
                 KEY="${REPLY#$'\t'<key>}"
-                KEY=\""${KEY%</key>}"\"
+                KEY="${KEY%</key>}"
+                local RAW_KEY="$KEY"
+                KEY=\""${RAW_KEY}"\"
+
+                # Regex pattern matching
+                if [[ -n $REGEXP ]]; then
+                    if perl -ne 'exit 1 if /'"$REGEXP"'/' <<< "$RAW_KEY"; then
+                        # Skip this key
+                        SKIP=1
+                    fi
+                fi
+
                 ;;
 
             $'\t'"<string>"* | $'\t'"<date>"*)
@@ -67,30 +87,34 @@ parse() {
 
             $'\t'"<data>" | $'\t'"<array>" | $'\t'"<dict>")
                 # Data, Array or Dict - Phase 1: Tag Begins
+
+                [[ $SKIP == 1 ]] && next && continue # Skip
+
                 if [[ -n ${2:-} ]]; then
                     echo "defaults ${2:-} write $1 $KEY '"$'\n'"${REPLY#$'\t'}"
                 else
                     echo "defaults write $1 $KEY '"$'\n'"${REPLY#$'\t'}"
                 fi
 
-                KEY=""
-                VALUE=""
-
+                next # Reset KEY and VALUE
                 continue
                 ;;
 
             $'\t'"</data>" | $'\t'"</array>" | $'\t'"</dict>")
                 # Data, Array or Dict - Phase 3: Tag Ends
+
+                [[ $SKIP == 1 ]] && next && continue # Skip
+
                 echo "${REPLY#$'\t'}"$'\n'\'
 
-                KEY=""
-                VALUE=""
-
+                next # Reset KEY and VALUE
                 continue
                 ;;
 
             *)
                 # Data, Array or Dict - Phase 2: Extract Raw XML
+
+                [[ $SKIP == 1 ]] && next && continue # Skip
 
                 # Skip XML Declaration, Plist info and Root Tags
                 local DOCTYPE='<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" '
@@ -114,6 +138,7 @@ parse() {
 
         # If KEY and VALUE are ready, echo result
         [[ -n $KEY && -n $VALUE ]] || continue
+        [[ $SKIP == 1 ]] && next && continue # Skip
 
         if [[ -n ${2:-} ]]; then
             echo "defaults ${2:-} write $1 $KEY $VALUE"
@@ -121,9 +146,7 @@ parse() {
             echo "defaults write $1 $KEY $VALUE"
         fi
 
-        # Reset KEY and VALUE
-        KEY=""
-        VALUE=""
+        next # Reset KEY and VALUE
     done
 }
 
@@ -176,13 +199,21 @@ usage() {
 
 ${p}USAGE${r}
     ${y}ds${r}
+
     ${y}ds${r} (-d | domain) ${c}<(domain | plist-path)>${r}
     ${y}ds${r} (-c | currentHost) ${c}<domain>${r}
     ${y}ds${r} (-s | save)
 
+    ${y}ds${r} (-e | --regex) ${c}<pattern>${r} (-d | domain) ${c}<(domain | plist-path)>${r}
+    ${y}ds${r} (-e | --regex) ${c}<pattern>${r} (-c | currentHost) ${c}<domain>${r}
+    ${y}ds${r} (-e | --regex) ${c}<pattern>${r} (-s | save)
+
 ${p}DESCRIPTION${r}
     ${y}[no command]${r}
             Shows this help.
+
+    ${y}(-e | --regex)${r} ${c}<pattern>${r}
+            Specify a pattern to filter keys.
 
     ${y}(-d | domain)${r} ${c}<(domain | plist-path)>${r}
             Prints parsed user defaults of specified domain or .plist file.
@@ -215,29 +246,41 @@ fatalError() {
 # Show Usage
 [[ $# -eq 0 ]] && usage
 
+REGEXP=""
+
+# Extract Regex pattern arguments
+for arg in "$@"; do
+    case "$arg" in
+        -e | --regex)
+            [[ -n $REGEXP ]] && fatalError "Multiple pattern is not supported."
+            shift && REGEXP="$1" && shift
+            ;;
+    esac
+done
+
 # Main
 for arg in "$@"; do
     case "$arg" in
-        domain | -d)
+        -d | domain)
             shift
             [[ ! $# -eq 1 ]] && fatalError "Invalid number of arguments."
             parse "$1"
             ;;
 
-        currentHost | -c)
+        -c | currentHost)
             shift
             [[ ! $# -eq 1 ]] && fatalError "Invalid number of arguments."
             parse "$1" -currentHost
             ;;
 
-        save | -s)
+        -s | save)
             shift
             [[ ! $# -eq 0 ]] && fatalError "Invalid number of arguments."
             save
             ;;
 
         *)
-            fatalError "Invalid arguments."
+            fatalError "Invalid argument '$1'."
             ;;
 
     esac
