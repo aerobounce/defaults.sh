@@ -155,7 +155,7 @@ $ ds -e '^(SUEnableAutomaticChecks|(?!SU|NSWindow|NSSplitView|MSApp|NSToolbar).)
 
 ```
 
-> If you come up with other useful expressions, please let me know at [Discussions](https://github.com/aerobounce/defaults.sh/discussions).
+> If you came up with other useful expressions, please let me know at [Discussions](https://github.com/aerobounce/defaults.sh/discussions).
 
 **See the preferences of `Dock.app` on the fly:**
 
