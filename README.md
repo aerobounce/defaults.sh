@@ -114,7 +114,7 @@ $ defaults export com.apple.dock -
 ...
 ```
 
-**With `ds`, you'll get this:**
+With `ds`, you'll get this:
 
 **Shell Script**
 
@@ -135,6 +135,7 @@ defaults write com.apple.dock "autohide-time-modifier" -float 0.0
 **Regular expression filtering:**
 
 ```sh
+
 ### Case Insensitive
 $ ds -e '(?i)show' -d "com.apple.finder"
 
@@ -142,15 +143,13 @@ defaults write com.apple.finder "AppleShowAllFiles" -boolean true
 defaults write com.apple.finder "ShowHardDrivesOnDesktop" -boolean false
 defaults write com.apple.finder "ShowPathbar" -boolean true
 ...
-```
 
-```sh
 ### Ignore specific keys with an exception
 $ ds -e '^(SUEnableAutomaticChecks|(?!SU|NSWindow|NSSplitView|MSApp|NSToolbar).)*$' \
      -d "com.flexibits.fantastical2.mac"
 
-# With this example, it skips the keys that start with:
-# "SU", "NSWindow", "NSSplitView", "MSApp", "NSToolbar"
+# With this example above, ds skips any keys that start with:
+# "SU", "NSWindow", "NSSplitView", "MSApp", "NSToolbar".
 # However, "SUEnableAutomaticChecks" is the exception and will not be skipped.
 
 ```
