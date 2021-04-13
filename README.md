@@ -7,36 +7,37 @@
 ## 🌟 Overview
 > <br>
 > A while ago, I started to build dotfiles up. Soon found out there is no robust way to convert preferences (plists) into shell scripts. So, decided to create a such script to automate the processes. This script has been just only for myself though, I'm releasing it to the public 🎉<br>
-> To make a such time into constructive one, at least a part of it. This might be a good chance to review or reconstruct your dotfiles. It'll be a fun with `defaults.sh`.<br>
+> To make a such time into constructive one. Think different — this might be a good chance to review or reconstruct your dotfiles. It'll be a fun with `defaults.sh`.<br>
 > <br>
 > Stay Safe — Instead, Unleash the Power of `defaults`!<br>
 > <br>
 
-- **Based on Bash**
+- Written in Bash
     - All the parsing are done with the shell's string manipulation
-- Originally written on `macOS Mojave`, thus it should works on the OS too
-    - Although not sure with the older macOSes, it should also work
+- Tested on Mojave, Catalina and Big Sur
+    - Originally written on `macOS Mojave`
+    - Although not sure with the older macOSes, it also should work
 
 <br>
 
-## ⏬ Installation
+# Installation
 
-> **Homebrew**
+**Homebrew**
 
 ```sh
 brew tap aerobounce/defaults.sh "https://github.com/aerobounce/defaults.sh" && brew install ds
 ```
 
-> **Portable**
+**Portable**
 
 ```sh
 # Download 'ds' onto ~/Desktop & make it executable
 ds=~/Desktop/ds; curl "https://raw.githubusercontent.com/aerobounce/defaults.sh/master/ds" >| "$ds" && chmod -vv $(sh -c 'printf "%04o" $((0777 - $(umask)))') "$ds"
 ```
 
-<br>
 
-## ✏️ Usage
+# Usage
+
 ```sh
 NAME
     defaults.sh -- Convert user defaults (plist) into shell script
@@ -78,19 +79,16 @@ DESCRIPTION
                 'defaults domains' + NSGlobalDomain
 ```
 
-<br>
 
-## ❓ "Convert" user defaults?
+# "Convert" user defaults?
 
-**When you build dotfiles, aren't they inconvenient format?**
+With `defaults`, you get either of these:
 
-> **NeXTStep Format**
+**NeXTStep Format**
 
 ```sh
 $ defaults read com.apple.dock
-```
 
-```sh
 {
     autohide = 1;
     "autohide-delay" = 0;
@@ -98,13 +96,11 @@ $ defaults read com.apple.dock
 ...
 ```
 
-> **XML Property Lists**
+**XML Property Lists**
 
 ```sh
 $ defaults export com.apple.dock -
-```
 
-```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -120,13 +116,11 @@ $ defaults export com.apple.dock -
 
 **With `ds`, you'll get this:**
 
-> **Shell Script**
+**Shell Script**
 
 ```sh
 $ ds -d com.apple.dock
-```
 
-```sh
 #!/usr/bin/env bash
 
 defaults write com.apple.dock "autohide" -boolean true
@@ -135,55 +129,15 @@ defaults write com.apple.dock "autohide-time-modifier" -float 0.0
 ...
 ```
 
-<br>
 
-## ✨ Examples
-
-> **See the preferences of `Dock.app` on the fly:**
-
-```sh
-$ ds -d com.apple.dock
-#!/usr/bin/env bash
-
-defaults write com.apple.dock "autohide" -boolean true
-defaults write com.apple.dock "autohide-delay" -float 0.0
-defaults write com.apple.dock "autohide-time-modifier" -float 0.0
-defaults write com.apple.dock "enable-spring-load-actions-on-all-items" -boolean true
-defaults write com.apple.dock "expose-group-apps" -boolean true
-defaults write com.apple.dock "launchanim" -boolean true
-defaults write com.apple.dock "magnification" -boolean false
-...
-```
-
-> **Pipe the result into any command you like:**
-
-```sh
-$ ds -d com.apple.dock | <subl | less...>
-```
-
-> **Export all the user defaults as shell script:**
-
-```sh
-$ ds save
-
-$ ls ~/Desktop
-ds 2020.04.11 14.54.06/
-
-$ ls -1 'ds 2020.04.11 14.54.06'
-ContextStoreAgent.sh*
-MobileMeAccounts.sh*
-NSGlobalDomain.currentHost.sh*
-NSGlobalDomain.sh*
-com.apple.AMPDevicesAgent.sh*
-com.apple.AMPLibraryAgent.sh*
-...
-```
+# Examples
 
 > **Regular expression filtering:**
 
 ```sh
 # Case Insensitive
 $ ds -e '(?i)show' -d "com.apple.finder"
+
 defaults write com.apple.finder "AppleShowAllFiles" -boolean true
 defaults write com.apple.finder "ShowHardDrivesOnDesktop" -boolean false
 defaults write com.apple.finder "ShowPathbar" -boolean true
@@ -202,7 +156,23 @@ $ ds -e '^(SUEnableAutomaticChecks|(?!SU|NSWindow|NSSplitView|MSApp|NSToolbar).)
 
 > If you come up with other useful expressions, please let me know at [Discussions](https://github.com/aerobounce/defaults.sh/discussions).
 
-<br>
+**See the preferences of `Dock.app` on the fly:**
+
+```sh
+$ ds -d com.apple.dock
+```
+
+> **Pipe the result into any command you like:**
+
+```sh
+$ ds -d com.apple.dock | <subl | less...>
+```
+
+> **Export all the user defaults as shell script:**
+
+```sh
+$ ds save
+```
 
 > **Script that resets preferences of an app while preserving your settings:**
 
@@ -215,10 +185,5 @@ defaults remove com.apple.finder
 
 defaults write com.apple.finder "AppleShowAllFiles" -boolean true
 defaults write com.apple.finder "DisableAllAnimations" -boolean true
-defaults write com.apple.finder "FK_AppCentricShowSidebar" -boolean true
-defaults write com.apple.finder "FXAddSearchToSidebar" -boolean false
-defaults write com.apple.finder "FXArrangeGroupViewBy" -string 'Kind'
-defaults write com.apple.finder "FXDefaultSearchScope" -string 'SCcf'
-defaults write com.apple.finder "FXEnableExtensionChangeWarning" -boolean false
 ...
 ```
