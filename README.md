@@ -135,7 +135,7 @@ defaults write com.apple.dock "autohide-time-modifier" -float 0.0
 **Regular expression filtering:**
 
 ```sh
-# Case Insensitive
+### Case Insensitive
 $ ds -e '(?i)show' -d "com.apple.finder"
 
 defaults write com.apple.finder "AppleShowAllFiles" -boolean true
@@ -145,13 +145,14 @@ defaults write com.apple.finder "ShowPathbar" -boolean true
 ```
 
 ```sh
-# Ignore specific keys
-$ ds -e '^(SUEnableAutomaticChecks|(?!SU|NSWindow|NSSplitView|MSApp|NSToolbar).)*$' -d "com.flexibits.fantastical2.mac"
-#
+### Ignore specific keys with an exception
+$ ds -e '^(SUEnableAutomaticChecks|(?!SU|NSWindow|NSSplitView|MSApp|NSToolbar).)*$' \
+#    -d "com.flexibits.fantastical2.mac"
+
 # With this example, it skips the keys that start with:
 # "SU", "NSWindow", "NSSplitView", "MSApp", "NSToolbar"
 # However, "SUEnableAutomaticChecks" is the exception and will not be skipped.
-#
+
 ```
 
 > If you come up with other useful expressions, please let me know at [Discussions](https://github.com/aerobounce/defaults.sh/discussions).
@@ -165,7 +166,7 @@ $ ds -d com.apple.dock
 **Pipe the result into any command you like:**
 
 ```sh
-$ ds -d com.apple.dock | <subl | less...>
+$ ds -d com.apple.dock | <subl | less | ...>
 ```
 
 **Export all the user defaults as shell script:**
