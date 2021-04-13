@@ -1,6 +1,6 @@
 #  defaults.sh — ds
 
-> **Convert user defaults (plist) into shell script with ease!**
+**Convert user defaults (plist) into shell script with ease!**
 
 [![asciicast ds demo](https://asciinema.org/a/gql2Lhn0grvlgjw4RzaS1NOPV.svg)](https://asciinema.org/a/gql2Lhn0grvlgjw4RzaS1NOPV)
 
@@ -132,7 +132,7 @@ defaults write com.apple.dock "autohide-time-modifier" -float 0.0
 
 # Examples
 
-> **Regular expression filtering:**
+**Regular expression filtering:**
 
 ```sh
 # Case Insensitive
@@ -162,19 +162,19 @@ $ ds -e '^(SUEnableAutomaticChecks|(?!SU|NSWindow|NSSplitView|MSApp|NSToolbar).)
 $ ds -d com.apple.dock
 ```
 
-> **Pipe the result into any command you like:**
+**Pipe the result into any command you like:**
 
 ```sh
 $ ds -d com.apple.dock | <subl | less...>
 ```
 
-> **Export all the user defaults as shell script:**
+**Export all the user defaults as shell script:**
 
 ```sh
 $ ds save
 ```
 
-> **Script that resets preferences of an app while preserving your settings:**
+**Script that resets preferences of an app while preserving your settings:**
 
 ```sh
 #!/usr/bin/env bash
