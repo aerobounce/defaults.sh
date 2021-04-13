@@ -147,7 +147,7 @@ defaults write com.apple.finder "ShowPathbar" -boolean true
 ```sh
 ### Ignore specific keys with an exception
 $ ds -e '^(SUEnableAutomaticChecks|(?!SU|NSWindow|NSSplitView|MSApp|NSToolbar).)*$' \
-#    -d "com.flexibits.fantastical2.mac"
+     -d "com.flexibits.fantastical2.mac"
 
 # With this example, it skips the keys that start with:
 # "SU", "NSWindow", "NSSplitView", "MSApp", "NSToolbar"
