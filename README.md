@@ -162,6 +162,15 @@ $ ds -e '^(SUEnableAutomaticChecks|(?!SU|NSWindow|NSSplitView|MSApp|NSToolbar).)
 $ ds -d com.apple.dock
 ```
 
+**See the preferences of `Music.app` on the fly:**
+
+```sh
+$ ds -d com.apple.music
+
+# Dump CurrentHost plist (Note that you just replace `-d` with `-c`, not `-c -d ...`)
+$ ds -c com.apple.music
+```
+
 **Pipe the result into any command you like:**
 
 ```sh
