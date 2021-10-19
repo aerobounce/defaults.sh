@@ -5,8 +5,6 @@ class Ds < Formula
   sha256 "7f58aee4e8162095489cc752ad23c3e78c101522738fd7dfc50df047a0b1c08a"
   head "https://github.com/aerobounce/defaults.sh.git"
 
-  bottle :unneeded
-
   def install
     bin.install "ds"
   end
