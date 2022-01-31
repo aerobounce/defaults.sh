@@ -1,24 +1,20 @@
 #  defaults.sh — ds
 
-**Convert user defaults (plist) into shell script with ease!**
+### User Defaults Plist → Shell Script converter.
 
-[![asciicast ds demo](https://asciinema.org/a/gql2Lhn0grvlgjw4RzaS1NOPV.svg)](https://asciinema.org/a/gql2Lhn0grvlgjw4RzaS1NOPV)
+[![](https://img.shields.io/badge/Platform-macOS%20Mojave+-blue.svg)]()
+[![](https://img.shields.io/github/v/tag/aerobounce/defaults.sh?display_name=tag)]()
 
-## 🌟 Overview
-> <br>
-> A while ago, I started to build dotfiles up. Soon found out there is no robust way to convert preferences (plists) into shell scripts. So, decided to create a such script to automate the processes. This script has been just only for myself though, I'm releasing it to the public 🎉<br>
-> To make a such time into constructive one. Think different — this might be a good chance to review or reconstruct your dotfiles. It'll be a fun with `defaults.sh`.<br>
-> <br>
-> Stay Safe — Instead, Unleash the Power of `defaults`!<br>
-> <br>
-
+- Made for dotfiles
 - Written in Bash
     - All the parsing are done with the shell's string manipulation
 - Tested on Mojave, Catalina and Big Sur
-    - Originally written on `macOS Mojave`
-    - Although not sure with the older macOSes, it also should work
+    - Although not tested with the older macOSes, it should work
 
 <br>
+
+[![asciicast ds demo](https://asciinema.org/a/gql2Lhn0grvlgjw4RzaS1NOPV.svg)](https://asciinema.org/a/gql2Lhn0grvlgjw4RzaS1NOPV)
+
 
 # Installation
 
