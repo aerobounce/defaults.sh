@@ -21,14 +21,8 @@
 **Homebrew**
 
 ```sh
-brew tap aerobounce/defaults.sh "https://github.com/aerobounce/defaults.sh" && brew install ds
-```
-
-**Portable**
-
-```sh
-# Download 'ds' onto ~/Desktop & make it executable
-ds=~/Desktop/ds; curl "https://raw.githubusercontent.com/aerobounce/defaults.sh/master/ds" >| "$ds" && chmod -vv $(sh -c 'printf "%04o" $((0777 - $(umask)))') "$ds"
+brew tap aerobounce/defaults.sh "https://github.com/aerobounce/defaults.sh"
+brew install ds
 ```
 
 
@@ -76,56 +70,6 @@ DESCRIPTION
 ```
 
 
-# "Convert" user defaults?
-
-With `defaults`, you get either of these:
-
-**NeXTStep Format**
-
-```sh
-$ defaults read com.apple.dock
-
-{
-    autohide = 1;
-    "autohide-delay" = 0;
-    "autohide-time-modifier" = 0;
-...
-```
-
-**XML Property Lists**
-
-```sh
-$ defaults export com.apple.dock -
-
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>autohide</key>
-    <true/>
-    <key>autohide-delay</key>
-    <real>0.0</real>
-    <key>autohide-time-modifier</key>
-    <real>0.0</real>
-...
-```
-
-With `ds`, you'll get this:
-
-**Shell Script**
-
-```sh
-$ ds -d com.apple.dock
-
-#!/usr/bin/env bash
-
-defaults write com.apple.dock "autohide" -boolean true
-defaults write com.apple.dock "autohide-delay" -float 0.0
-defaults write com.apple.dock "autohide-time-modifier" -float 0.0
-...
-```
-
-
 # Examples
 
 **Regular expression filtering:**
@@ -150,7 +94,7 @@ $ ds -e '^(SUEnableAutomaticChecks|(?!SU|NSWindow|NSSplitView|MSApp|NSToolbar).)
 
 ```
 
-> If you came up with other useful expressions, please let me know at [Discussions](https://github.com/aerobounce/defaults.sh/discussions).
+> If you came up with other useful expressions, please let me know.
 
 **See the preferences of `Dock.app` on the fly:**
 
@@ -190,5 +134,51 @@ defaults remove com.apple.finder
 
 defaults write com.apple.finder "AppleShowAllFiles" -boolean true
 defaults write com.apple.finder "DisableAllAnimations" -boolean true
+...
+```
+
+
+# "Convert" User Defaults?
+
+With `defaults`, you get either of these:
+
+**NeXTStep Format**
+
+```sh
+$ defaults read com.apple.dock
+
+{
+    autohide = 1;
+    "autohide-delay" = 0;
+...
+```
+
+**XML Property Lists**
+
+```sh
+$ defaults export com.apple.dock -
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>autohide</key>
+    <true/>
+    <key>autohide-delay</key>
+    <real>0.0</real>
+...
+```
+
+With `ds`, you'll get this:
+
+**Shell Script**
+
+```sh
+$ ds -d com.apple.dock
+
+#!/usr/bin/env bash
+
+defaults write com.apple.dock "autohide" -boolean true
+defaults write com.apple.dock "autohide-delay" -float 0.0
 ...
 ```
