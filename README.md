@@ -1,4 +1,4 @@
-#  defaults.sh — ds
+#  ds
 
 ### User Defaults Plist → Shell Script converter.
 
@@ -7,9 +7,7 @@
 
 - Made for dotfiles
 - Written in Bash
-    - All the parsing are done with the shell's string manipulation
-- Tested on Mojave, Catalina and Big Sur
-    - Although not tested with the older macOSes, it should work
+- Tested on Mojave, Catalina and Big Sur (Although not tested, it should work with older OSes)
 
 <br>
 
@@ -21,52 +19,20 @@
 **Homebrew**
 
 ```sh
-brew tap aerobounce/defaults.sh "https://github.com/aerobounce/defaults.sh"
-brew install ds
+brew install "aerobounce/tap/ds"
 ```
 
 
 # Usage
 
 ```sh
-NAME
-    defaults.sh -- Convert user defaults (plist) into shell script
+ds (-d | domain) <(domain | plist-path)>
+ds (-c | currentHost) <domain>
+ds (-s | save)
 
-USAGE
-    ds
-
-    ds (-d | domain) <(domain | plist-path)>
-    ds (-c | currentHost) <domain>
-    ds (-s | save)
-
-    ds (-e | --regex) <pattern> (-d | domain) <(domain | plist-path)>
-    ds (-e | --regex) <pattern> (-c | currentHost) <domain>
-    ds (-e | --regex) <pattern> (-s | save)
-
-DESCRIPTION
-    [no command]
-            Shows this help.
-
-    (-e | --regex) <pattern>
-            Specify a pattern to filter keys.
-
-    (-d | domain) <(domain | plist-path)>
-            Prints parsed user defaults of specified domain or .plist file.
-            Both of the following commands are valid:
-                $ ds -d com.apple.dock
-                $ ds -d ~/Library/Preferences/com.apple.dock.plist
-
-    (-c | currentHost) <domain>
-            Same as (-d | domain), except operation will be restricted
-            to the host the user is currently logged in on.
-
-    (-s | save)
-            Exports all the defaults as executable .sh files.
-            (To '~/Desktop/ds +%Y.%m.%d %H.%M.%S/')
-
-            Domains are:
-                'defaults -currentHost domains' + NSGlobalDomain
-                'defaults domains' + NSGlobalDomain
+ds (-e | --regex) <pattern> (-d | domain) <(domain | plist-path)>
+ds (-e | --regex) <pattern> (-c | currentHost) <domain>
+ds (-e | --regex) <pattern> (-s | save)
 ```
 
 
