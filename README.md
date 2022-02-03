@@ -19,7 +19,7 @@
 **Homebrew**
 
 ```sh
-brew install "aerobounce/tap/ds"
+brew install aerobounce/tap/ds
 ```
 
 
